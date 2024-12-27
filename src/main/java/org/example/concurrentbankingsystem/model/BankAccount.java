@@ -1,9 +1,6 @@
 package org.example.concurrentbankingsystem.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,8 +19,13 @@ public class BankAccount {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @Column(nullable = false, unique = true)
     private String accountNumber;
+
+    @Column(nullable = false)
     private String accountHolderName;
+
+    @Column
     private double balance;
 
     public void deposit(double amount) {

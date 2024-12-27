@@ -1,9 +1,6 @@
 package org.example.concurrentbankingsystem.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,9 +20,16 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @Column
     private String transactionType;
+
+    @Column
     private double amount;
+
+    @Column
     private String accountNumber;
+
+    @Column
     private LocalDateTime transactionDate;
 
     public Transaction(String transactionType, double amount, String accountNumber) {
