@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.concurrentbankingsystem.model.enums.TransactionType;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -14,28 +16,70 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "transactions")
 public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column
-    private String transactionType;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "source_account_id")
+    private BankAccount sourceAccount;
 
-    @Column
-    private double amount;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_account_id")
+    private BankAccount targetAccount;
 
-    @Column
-    private String accountNumber;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TransactionType type;
 
-    @Column
-    private LocalDateTime transactionDate;
+    @Column(nullable = false)
+    private BigDecimal amount;
 
-    public Transaction(String transactionType, double amount, String accountNumber) {
-        this.transactionType = transactionType;
-        this.amount = amount;
-        this.accountNumber = accountNumber;
-        this.transactionDate = LocalDateTime.now();
+    @Column(nullable = false)
+    private LocalDateTime timestamp;
+
+    private String description;
+
+    @Column(nullable = false)
+    private boolean successful;
+
+    @PrePersist
+    protected void onCreate() {
+        timestamp = LocalDateTime.now();
+    }
+
+    public static Transaction createDeposit(BankAccount targetAccount, BigDecimal amount) {
+        return Transaction.builder()
+                .targetAccount(targetAccount)
+                .type(TransactionType.DEPOSIT)
+                .amount(amount)
+                .successful(true)
+                .description("Deposit to account: " + targetAccount.getAccountNumber())
+                .build();
+    }
+
+    public static Transaction createWithdrawal(BankAccount sourceAccount, BigDecimal amount) {
+        return Transaction.builder()
+                .sourceAccount(sourceAccount)
+                .type(TransactionType.WITHDRAWAL)
+                .amount(amount)
+                .successful(true)
+                .description("Withdrawal from account: " + sourceAccount.getAccountNumber())
+                .build();
+    }
+
+    public static Transaction createTransfer(BankAccount sourceAccount, BankAccount targetAccount, BigDecimal amount) {
+        return Transaction.builder()
+                .sourceAccount(sourceAccount)
+                .targetAccount(targetAccount)
+                .type(TransactionType.TRANSFER)
+                .amount(amount)
+                .successful(true)
+                .description("Transfer from account: " + sourceAccount.getAccountNumber() +
+                        " to account: " + targetAccount.getAccountNumber())
+                .build();
     }
 }

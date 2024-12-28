@@ -6,6 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -13,6 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "bank_accounts")
 public class BankAccount {
 
     @Id
@@ -25,18 +30,41 @@ public class BankAccount {
     @Column(nullable = false)
     private String accountHolderName;
 
-    @Column
-    private double balance;
+    @Column(nullable = false)
+    private BigDecimal balance;
 
-    public void deposit(double amount) {
-        if (amount > 0) {
-            this.balance += amount;
-        }
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "sourceAccount", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Transaction> outgoingTransactions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "targetAccount", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Transaction> incomingTransactions = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
-    public void withdraw(double amount) {
-        if (amount > 0 && this.balance >= amount) {
-            this.balance -= amount;
-        }
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    public void deposit(BigDecimal amount) {
+        this.balance = this.balance.add(amount);
+    }
+
+    public void withdraw(BigDecimal amount) {
+        this.balance = this.balance.subtract(amount);
+    }
+
+    public boolean hasInsufficientBalance(BigDecimal amount) {
+        return this.balance.compareTo(amount) < 0;
     }
 }
