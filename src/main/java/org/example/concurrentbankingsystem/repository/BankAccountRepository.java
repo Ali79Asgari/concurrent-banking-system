@@ -11,10 +11,9 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
-public interface BankAccountRepository extends JpaRepository<BankAccount, UUID> {
+public interface BankAccountRepository extends JpaRepository<BankAccount, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT a FROM BankAccount a WHERE a.accountNumber = :accountNumber")

@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -21,10 +20,10 @@ import java.util.UUID;
 public class BankAccount {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, updatable = false)
     private String accountNumber;
 
     @Column(nullable = false)
@@ -33,12 +32,6 @@ public class BankAccount {
     @Column(nullable = false)
     private BigDecimal balance;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
     @OneToMany(mappedBy = "sourceAccount", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Transaction> outgoingTransactions = new ArrayList<>();
 
@@ -46,14 +39,8 @@ public class BankAccount {
     private List<Transaction> incomingTransactions = new ArrayList<>();
 
     @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+    private void generateAccountNumber() {
+        this.accountNumber = UUID.randomUUID().toString();
     }
 
     public void deposit(BigDecimal amount) {
